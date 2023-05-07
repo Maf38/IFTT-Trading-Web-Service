@@ -5,7 +5,7 @@ using CryptoExchange.Net.Authentication;
 
 namespace IFTT_Trading.Bybit
 {
-    public class IFTTClient
+    public class IFTTClient : IIFTTClient
     {
 
         public BybitClient BybitClient { get; } = new BybitClient(new BybitClientOptions()
@@ -16,13 +16,7 @@ namespace IFTT_Trading.Bybit
         });
 
 
-
-
-
-
-
-
-        }
+    }
 
 
 }

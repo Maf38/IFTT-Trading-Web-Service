@@ -1,6 +1,3 @@
-
-
-
 using IFTT_Trading.Bybit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +8,6 @@ builder.Logging.AddConsole();
 
 
 builder.Services.AddSingleton<IFTTClient>();
-   
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -24,7 +20,14 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(x => x
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 }
+
+
+
 
 app.UseHttpsRedirection();
 

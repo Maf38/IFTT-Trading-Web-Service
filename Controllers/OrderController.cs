@@ -1,17 +1,13 @@
-﻿using Bybit.Net.Clients;
-using Bybit.Net.Enums;
+﻿using Bybit.Net.Enums;
 using Bybit.Net.Interfaces.Clients;
-using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models;
-using CryptoExchange.Net.Authentication;
 using IFTT_Trading.Bybit;
 using IFTT_Trading.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IFTT_Trading.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class OrderController : ControllerBase
     {
@@ -21,14 +17,27 @@ namespace IFTT_Trading.Controllers
 
         public OrderController(ILogger<OrderController> logger, IFTTClient client)
         {
-            
-            _bybitClient=client.BybitClient;
+
+            _bybitClient = client.BybitClient;
             _logger = logger;
         }
 
-  
+
+        [HttpGet(Name = "GetKline")]
+        public async Task<ActionResult<IEnumerable<BybitKline>>> GetBybitKlineAsync()
+        {
+
+
+
+            var kline = await _bybitClient.UsdPerpetualApi.ExchangeData.GetKlinesAsync("BTCUSDT", KlineInterval.OneHour, DateTime.UtcNow.AddDays(-3));
+
+            return Ok(kline);
+
+        }
+
+
         [HttpGet(Name = "GetOrderBookBTC")]
-        public async Task<ActionResult<IEnumerable<BybitOrderBookEntry>>> GetOrderBybitOrderBookEntryrAsync()
+        public async Task<ActionResult<IEnumerable<BybitOrderBookEntry>>> GetBybitOrderBookEntryAsync()
         {
             // Getting the order book of a symbol
             var orderBookData = await _bybitClient.UsdPerpetualApi.ExchangeData.GetOrderBookAsync("BTCUSDT");
@@ -37,7 +46,7 @@ namespace IFTT_Trading.Controllers
 
 
             return Ok(orderBookData);
-            
+
         }
 
         [HttpPost(Name = "PlaceOrder")]
@@ -50,7 +59,7 @@ namespace IFTT_Trading.Controllers
                 var data = await _bybitClient.UsdPerpetualApi.Trading.PlaceOrderAsync(
                symbol: order.Pair,
                //side: order.ParseBybitOrderSide(order.OrderSide),
-               side: order.ParseBybitOrderSide(order.StringOrderSide),
+               side: order.ParseBybitOrderSide(order.OrderSide),
                type: OrderType.Limit,
                quantity: order.Quantity,
                timeInForce: TimeInForce.GoodTillCanceled,
@@ -59,7 +68,9 @@ namespace IFTT_Trading.Controllers
                stopLossPrice: order.StopLoss,
                takeProfitPrice: order.TakeProfit,
                price: order.Price,
-               receiveWindow: 50000
+               receiveWindow: 50000,
+               // Position mode = mode de couverture(unidirectionnel ou hedge mode) =< pour l'instant il faut que le coin soit positionné en unidirectionnel au niveau des options bybit
+               positionMode: PositionMode.OneWay
 
             );
 
@@ -71,7 +82,7 @@ namespace IFTT_Trading.Controllers
                     LimitOrder returnorder = new LimitOrder(
                         id: data.Data.Id,
                         pair: data.Data.Symbol,
-                        orderSide: order.StringOrderSide,
+                        orderSide: order.OrderSide,
                         quantity: data.Data.Quantity,
                         stopLoss: data.Data.StopLoss ?? order.StopLoss,
                         takeProfit: data.Data.TakeProfit ?? order.TakeProfit,
@@ -88,8 +99,8 @@ namespace IFTT_Trading.Controllers
                 {
                     if (!data.Success && data.Error != null)
                     {
-                        response.Error= data.Error.ToString();
-                        _logger.LogError("PlaceOrder Order KO {0}",response.Error);
+                        response.Error = data.Error.ToString();
+                        _logger.LogError("PlaceOrder Order KO {0}", response.Error);
                     }
 
                     return BadRequest(response);
@@ -100,10 +111,10 @@ namespace IFTT_Trading.Controllers
                 _logger.LogError("PlaceOrder Order Error {0}", e.Message.ToString());
                 return BadRequest();
             }
-           
-
-        }
 
 
         }
+
+
     }
+}

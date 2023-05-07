@@ -9,14 +9,14 @@ namespace IFTT_Trading.Models
     {
 
         public string? Id { get; set; }
-        public string StringOrderSide { get; set; }
+        public string OrderSide { get; set; }
         public string Pair { get; set; }
         public decimal Quantity { get; set; }
 
 
         public Order(string orderSide,string pair,decimal quantity)
         {
-            StringOrderSide = orderSide;
+            OrderSide = orderSide;
             Pair = pair;
             Quantity = quantity;
 
@@ -34,13 +34,13 @@ namespace IFTT_Trading.Models
             switch (orderstring)
             {
                 case "Buy":
-                    orderSide = OrderSide.Buy;
+                    orderSide = global::Bybit.Net.Enums.OrderSide.Buy;
                     break;
                 case "Sell":
-                orderSide = OrderSide.Sell;
+                orderSide = global::Bybit.Net.Enums.OrderSide.Sell;
                 break;
                 default:
-                    orderSide = OrderSide.Buy;
+                    orderSide = global::Bybit.Net.Enums.OrderSide.Buy;
                 break;
             }
 
